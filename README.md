@@ -1,57 +1,45 @@
-# esgi-nosql-mongodb
-ESGI course about NoSQL, and more specifically, the use of MngoDB with Docker.
+# MongoDB
 
-Run mongo db docker:
-$ docker run -p 27017:27017 esgi-mongodb
+### 1 - Lancer un container Mongo
+- `docker run -p 27017:27017 mongo`
 
-Go to mongo db docker:
-$ docker exec -it esgi-mongodb bash
+### 2 - Importation de données
+- `mongoimport --db airbnb --type csv --headerline --host "localhost:27017"  --file "listings.csv"`
 
-Import listing files into mogodb docker:
-$ docker cp listings.csv esgi-mongodb:/
-(only one time)
+### 3 - Tester commande find et count
+- `db.listings.find()`
+- `db.listings.count()`
 
-Import listing.csv from docker files to mongodb database:
-$ mongoimport --db='airbnb' --collection='listings' --file=listings.csv --type=csv --headerline
+### 4 - Combien d'offres pour le quartier de "Bègles" avec count ?
+- `db.listings.find({'neighbourhood': /Bègles/}).count()`
 
-Connected to MongoDB database via Studio 3T using adress "localhost:27017".
-(If the airbnb DB does not show on Studio 3T, try searching for MongoDB in 'Task Manager > Services' for MongoDB and stop the service. The reconnect to the DB.)
+### 5 - Lister les offres du même quartier
+- `db.listings.find({'neighbourhood': /Bègles/})`
 
-In docker bash:
-$ mogosh
-to switch to mongo shell
+### 6 - Lister le Top 3 des offres du quartier par note moyenne avec find
+- `db.listings.find({'neighbourhood': /Bègles/}).sort({'review_scores_rating': 1}).limit(3)`
 
-then, switch to the airbnb database with:
-> use airbnb
+### 7 - Augmenter le prix du logement ayant l'id 
+- `db.listings.updateOne({'id': 6891646}, {"$set": {'price': '$210.00'}})`
 
-To see samples of data stored in the db, type:
-> db.listings.find()
-and for the number of entries in listings, type:
-> db.listings.count()
+### 8 - Compter le nombre de logements avec un réfrigérateur
+- `db.listings.find({'amenities': /Refrigerator/}).count()`
 
-To get the number of offers in the neighbourhood of "Bègles":
-> db.listings.count({"neighbourhood": /.*Bègles*/})
-OUT : 265
-and to get the offers from the same neighbourhood:
-> db.listings.find({"neighbourhood": /.*Bègles*/}
+### 9 - Trouver le logement le plus cher
+- `db.listings.find().sort({'price': -1}).limit(1)`
 
-Top 3 offers in the Bègles neighbourhood sorted by ratings:
-> db.listings.find({"neighbourhood": /.*Bègles*/, "number_of_reviews": {"$gt": 0}}).sort({"review_scores_rating": -1}).limit(3)
+### 10 - Supprimer tous les logements du host 'GuestReady' en 1 seule commande
+- `db.listings.deleteMany({'host_name': 'GuestReady'})`
 
-To increase the price of the offer with the ID 6891646 to $210.00:
-> db.listings.updateOne({'id': 6891646}, {"$set": {'price': '$210.00'}})
 
-To count the number of offers which includes a "Refrigirator":
-> db.listings.find({'amenities': /Refrigerator/}).count()
+### 11 - Faire une route qui affiche en fonction de ce qu'on met en paramètre dans l'URL les logements dans l'ordre décroissant avec une pagination 
 
-Find the most expensive offer:
-> db.listings.find().sort({'price': -1}).limit(1)
+- La route est dans le fichier 'index.js' qui se trouve dans le répertoire 'routes/'
 
-Delete all offers from the host "GuestReady":
-> db.listings.deleteMany({'host_name': 'GuestReady'})
+### 12 - Trouver un moyen d'avoir le nombre de logement par quartier (aggregate) (Renvoie un tableau avec un le nom du quartier et le nombre du logement)
+- `db.listings.aggregate([{ $group: { _id: "$neighbourhood", count: { $sum: 1 }}}])`
 
-12 - Trouver un moyen d'avoir le nombre de logement par quartier (aggregate) (Renvoie un tableau avec un le nom du quartier et le nombre du logement)
-db.listings.aggregate([{ $group: { _id: "$neighbourhood", count: { $sum: 1 }}}])
 
-/ranking?page=1&page=10 with .skip((page-1) * parPage).limit(perPage) creating an api route
-Have the number of offers per neighbourhood using aggregates.
+Après avoir clone le répertoire, il faut faire un 'npm install' pour récupérer toute les dépendances.
+
+Pour lancer l'application, il faut faire un 'npm run dev'
